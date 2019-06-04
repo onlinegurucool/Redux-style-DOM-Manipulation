@@ -1,5 +1,9 @@
 // Need to create state [Global Variable]
 let familyHistoryState = [];
+// created state for mainuser information
+let mainUser = {
+    is_married : false
+}
 
 $(window).on('load',function(){
     // call events
@@ -22,9 +26,24 @@ $(window).on('load',function(){
             key: `is_adult`
         })
     })
-
-
+    // calling common function onchanges of select and input inside our target div 
+    $(document).on('change','#familyMemberList input,#familyMemberList select',function(){
+        action('UPDATE',{
+            index : $(this).parents('.row').attr('data-row-index'),
+            value: $(this).val(),
+            key: $(this).attr('name')
+        })
+    })
+    // on change event to set main user state
+    $(document).on('change','[name="is_married"]',function(){
+        if($(this).val() == 'true') {
+            action("UPDATE_RELATION",$(this).val())
+        } else {
+            action("UPDATE_RELATION","")
+        }
+    })
 })
+
 
 // Render Function based on state
 
@@ -58,6 +77,11 @@ function renderFamilyMember () {
                     <option value="brother" ${e.relation == 'brother' ? `selected` : ``}>Brother</option>
                     <option value="sister" ${e.relation == 'sister' ? `selected` : ``}>Sister</option>
                     <option value="mother" ${e.relation == 'mother' ? `selected` : ``}>Mother</option>
+                    ${
+                        mainUser.is_married == "true" ? 
+                        `<option value="spouse" ${e.relation == 'spouse' ? `selected` : ``}>Spouse</option>` : 
+                        ``
+                    }
                 </select>
             </div>
             <div class="col col-auto">`
@@ -89,11 +113,17 @@ function action(type,payload) {
                 last_name: ``,
                 is_adult: `false`,
                 mobile:``,
-                relation: ``
+                relation: ``,
+                is_married : false
             })
+            
             break;
         case "UPDATE":
             familyHistoryState[payload.index][payload.key] = payload.value;
+            break;
+        // added new case for update main user relation state
+        case "UPDATE_RELATION":
+            mainUser.is_married = payload
             break;
         case "REMOVE":
             familyHistoryState.splice(payload.index,1);
